@@ -59,7 +59,7 @@
 <div align="center">
 
 <!-- Adjust width here → FLOW_IMG_WIDTH = 520px -->
-<img src="./Flow.png" width="520px" alt="全体フロー図 — Overall System Flow Diagram"/>
+<img src="./Flow.svg" width="520px" alt="全体フロー図 — Overall System Flow Diagram"/>
 
 *図1 — 全体フロー · Figure 1 — Overall system flow*
 
