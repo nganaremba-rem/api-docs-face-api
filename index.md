@@ -2,7 +2,6 @@
    layout: default
    title: Face API Docs
 ---
-
 <div align="center">
 
 <br/>
@@ -307,10 +306,6 @@ POST /face-login
 
 <div align="center">
 
-<!-- Adjust width here → DETAIL_IMG_WIDTH = 700px -->
-<img src="./DetailedFlow.png" width="700px" alt="詳細クエリフロー図 — Detailed Query Flow Diagram"/>
-
-*図3 — 詳細クエリフロー · Figure 3 — Detailed query flow*
 
 </div>
 
