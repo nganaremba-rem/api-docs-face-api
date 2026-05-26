@@ -1,258 +1,191 @@
-# 顔認証＋複数システム認可 API ドキュメント
-# Face Authentication + Multi-System Authorization API Documentation
+
+<div align="center">
+
+<br/>
+
+# 🔐 Face Authentication API
+### Multi-System Authorization Platform
+
+<br/>
+
+![Version](https://img.shields.io/badge/version-1.0.0-6366f1?style=flat-square)
+![Auth](https://img.shields.io/badge/auth-face--recognition-10b981?style=flat-square)
+![JWT](https://img.shields.io/badge/token-JWT-f59e0b?style=flat-square)
+![Liveness](https://img.shields.io/badge/liveness-blink%20%2B%20head--turn-ef4444?style=flat-square)
+
+<br/>
+
+</div>
 
 ---
 
-# 1. システム概要
-# System Overview
+## 📋 Table of Contents
 
-このドキュメントは、顔認証ログインおよび複数システム認可の全体仕様について説明します。
-
-This document describes the overall specification of the Face Authentication Login and Multi-System Authorization platform.
-
-## 対象
-## Scope
-
-- 顔認証ログイン  
-  Face authentication login
-
-- ライブネス検知（まばたき・顔向き確認）  
-  Liveness detection (blink + head turn verification)
-
-- Blob動画アップロード認証  
-  Blob video-based authentication
-
-- システム別アクセス権限制御  
-  System-based authorization
-
-- JWTトークン発行  
-  JWT generation
-
-- アクセスログ記録  
-  Access logging
+- [System Overview](#-system-overview)
+- [Overall Flow](#-overall-flow)
+- [Database Structure](#-database-structure)
+- [Table Definitions](#-table-definitions)
+- [API Reference](#-api-reference)
+- [Processing Logic](#-processing-logic)
+- [Detailed Query Flow](#-detailed-query-flow)
+- [Important Notes](#-important-notes)
 
 ---
 
-# 2. 全体フロー
-# Overall Flow
+## 🧩 System Overview
 
-## システム全体フロー図
-## Overall System Flow Diagram
+This document describes the full specification of the **Face Authentication Login** and **Multi-System Authorization** platform.
 
-![Face Authentication Flow](./Flow.png)
-
----
-
-## 処理概要
-## Flow Summary
-
-### 1. ログイン画面表示
-### 1. Open Login Screen
-
-ユーザーが WMS/TMS ログイン画面を開きます。  
-User opens WMS/TMS login screen.
+| Feature | Description |
+|---|---|
+| 🎥 Face Login | Authenticate via 5-second Blob video |
+| 👁️ Liveness Detection | Blink + head turn verification |
+| 🏢 Multi-System Auth | WMS / TMS access control |
+| 🔑 JWT Issuance | Token includes roles and accessible systems |
+| 📋 Access Logging | All attempts saved to `access_logs` |
 
 ---
 
-### 2. カメラ起動
-### 2. Camera Starts
+## 🔄 Overall Flow
 
-ブラウザでカメラが起動します。  
-Frontend starts camera.
+<div align="center">
 
----
+<!-- Adjust width here → FLOW_IMG_WIDTH = 520px -->
+<img src="./Flow.png" width="520px" alt="Overall System Flow Diagram"/>
 
-### 3. ライブネス確認
-### 3. Liveness Verification
+*Figure 1 — Overall system flow*
 
-ユーザー本人確認のため以下を実施します。
+</div>
 
-Liveness verification is performed.
+### Flow Summary
 
-- Blink Detection
-- Head Turn Detection
-
----
-
-### 4. 5秒動画録画
-### 4. Record 5-second Video
-
-5秒間の動画を録画します。
-
-Record 5-second face video.
-
----
-
-### 5. Blob生成
-### 5. Convert to Blob
-
-録画した動画を Blob に変換します。
-
-Convert recorded video into Blob object.
+```
+① Open Login Screen     →  User opens WMS/TMS login page
+② Camera Starts         →  Frontend initializes camera
+③ Liveness Check        →  Blink detection + head turn detection
+④ Record Video          →  5-second face video captured
+⑤ Convert to Blob       →  Video converted to Blob object
+⑥ Send to API           →  Blob uploaded to backend
+⑦ Frame Extraction      →  Backend extracts frames from video
+⑧ Face Matching         →  Embeddings generated and compared
+⑨ Authorization Check   →  Verify access to requested system
+⑩ Generate JWT          →  Token issued on success
+⑪ Save Log              →  Result saved to access_logs
+⑫ Redirect              →  User redirected to dashboard
+```
 
 ---
 
-### 6. API送信
-### 6. Send API Request
+## 🗄️ Database Structure
 
-Blob動画をバックエンドへ送信します。
+<div align="center">
 
-Blob video is sent to backend API.
+<!-- Adjust width here → ER_IMG_WIDTH = 700px -->
+<img src="./ER.png" width="700px" alt="Database ER Diagram"/>
 
----
+*Figure 2 — Entity Relationship Diagram*
 
-### 7. 動画解析
-### 7. Video Processing
-
-サーバー側で動画フレーム抽出を行います。
-
-Backend extracts frames from uploaded video.
+</div>
 
 ---
 
-### 8. 顔認証
-### 8. Face Matching
+## 📦 Table Definitions
 
-抽出フレームから特徴量ベクトルを生成し、
-登録済みデータと照合します。
+<details>
+<summary><strong>users</strong> — User base information</summary>
+<br/>
 
-Generate face embeddings from frames and compare against stored vectors.
+<!-- Adjust width here → TABLE_IMG_WIDTH = 360px -->
+<img src="./User.png" width="360px" alt="users table"/>
 
----
+</details>
 
-### 9. 権限確認
-### 9. Authorization Check
+<details>
+<summary><strong>face_embeddings</strong> — Facial feature vectors</summary>
+<br/>
 
-対象システムへのアクセス権限を確認します。
+<!-- Adjust width here → TABLE_IMG_WIDTH = 360px -->
+<img src="./Face embeddings.png" width="360px" alt="face_embeddings table"/>
 
-Check whether user can access requested system.
+</details>
 
----
+<details>
+<summary><strong>systems</strong> — WMS / TMS system info</summary>
+<br/>
 
-### 10. JWT生成
-### 10. Generate JWT
+<!-- Adjust width here → TABLE_IMG_WIDTH = 360px -->
+<img src="./System.png" width="360px" alt="systems table"/>
 
-認証成功後 JWT を発行します。
+</details>
 
-JWT is generated after successful authentication.
+<details>
+<summary><strong>roles</strong> — Role definitions</summary>
+<br/>
 
----
+<!-- Adjust width here → TABLE_IMG_WIDTH = 360px -->
+<img src="./Roles.png" width="360px" alt="roles table"/>
 
-### 11. ログ保存
-### 11. Save Access Log
+</details>
 
-ログイン結果を access_logs に保存します。
+<details>
+<summary><strong>user_roles</strong> — User ↔ role mapping</summary>
+<br/>
 
-Authentication result is saved in access_logs.
+<!-- Adjust width here → TABLE_IMG_WIDTH = 360px -->
+<img src="./user roles.png" width="360px" alt="user_roles table"/>
 
----
+</details>
 
-### 12. ログイン完了
-### 12. Login Success
+<details>
+<summary><strong>role_permissions</strong> — Role-based access control</summary>
+<br/>
 
-ダッシュボードへ遷移します。
+<!-- Adjust width here → TABLE_IMG_WIDTH = 360px -->
+<img src="./role permissions.png" width="360px" alt="role_permissions table"/>
 
-User is redirected to dashboard.
+</details>
 
----
+<details>
+<summary><strong>user_system_permissions</strong> — Per-user override permissions</summary>
+<br/>
 
-# 3. データベース構成
-# Database Structure
+<!-- Adjust width here → TABLE_IMG_WIDTH = 360px -->
+<img src="./user system permissions.png" width="360px" alt="user_system_permissions table"/>
 
-## ER図
-## ER Diagram
+</details>
 
-![Database ER Diagram](./ER.png)
+<details>
+<summary><strong>access_logs</strong> — Login history</summary>
+<br/>
 
----
+<!-- Adjust width here → TABLE_IMG_WIDTH = 360px -->
+<img src="./access logs.png" width="360px" alt="access_logs table"/>
 
-# 4. テーブル一覧
-# Table Definitions
-
-# users
-
-![users](./User.png)
-
-ユーザー基本情報を保存します。  
-Stores user information.
-
----
-
-# face_embeddings
-
-![face_embeddings](./Face embeddings.png)
-
-顔特徴量ベクトルを保存します。  
-Stores facial embedding vectors.
-
----
-
-# systems
-
-![systems](./System.png)
-
-WMS / TMS システム情報。  
-Stores system information.
+</details>
 
 ---
 
-# roles
+## 🚀 API Reference
 
-![roles](./Roles.png)
-
-ロール定義。  
-Stores role definitions.
-
----
-
-# user_roles
-
-![user_roles](./user roles.png)
-
-ユーザーとロールの紐付け。  
-Maps users to roles.
-
----
-
-# role_permissions
-
-![role_permissions](./role permissions.png)
-
-ロール別アクセス権限。  
-Role-based permissions.
-
----
-
-# user_system_permissions
-
-![user_system_permissions](./user system permissions.png)
-
-ユーザー個別権限 override。  
-Per-user permission override.
-
----
-
-# access_logs
-
-![access_logs](./access logs.png)
-
-ログイン履歴保存。  
-Stores login history.
-
----
-
-# 5. API Logic
-# API Logic
-
-## Endpoint
+### Endpoint
 
 ```http
 POST /face-login
 ```
 
+> **Content-Type:** `multipart/form-data`
+
 ---
 
-## Request
+### Request & Response
+
+<table>
+<tr>
+<th width="50%">📤 Request</th>
+<th width="50%">📥 Response</th>
+</tr>
+<tr>
+<td>
 
 ```json
 {
@@ -261,9 +194,8 @@ POST /face-login
 }
 ```
 
----
-
-## Response
+</td>
+<td>
 
 ```json
 {
@@ -277,62 +209,80 @@ POST /face-login
 }
 ```
 
+</td>
+</tr>
+<tr>
+<td>
+
+| Field | Type | Description |
+|---|---|---|
+| `video` | `Blob` | 5-second face recording |
+| `systemCode` | `string` | Target system (`WMS` / `TMS`) |
+
+</td>
+<td>
+
+| Field | Type | Description |
+|---|---|---|
+| `success` | `boolean` | Auth result |
+| `token` | `string` | JWT access token |
+| `user.id` | `string` | Matched user ID |
+| `redirectTo` | `string` | Post-login redirect path |
+
+</td>
+</tr>
+</table>
+
 ---
 
-# 処理ロジック
-# Processing Logic
+### Error Responses
 
-```text
-1. User opens login screen
+| Status | Code | Meaning |
+|---|---|---|
+| `401` | `FACE_NOT_MATCHED` | No matching face found |
+| `403` | `ACCESS_DENIED` | User lacks system permission |
+| `422` | `LIVENESS_FAILED` | Blink / head-turn not detected |
+| `500` | `PROCESSING_ERROR` | Frame extraction failed |
 
-2. Frontend starts camera
+---
 
-3. Blink detection runs
+## ⚙️ Processing Logic
 
-4. Head turn detection runs
-
-5. Frontend records 5-second face video
-
-6. Video converted into Blob
-
-7. Blob uploaded to backend
-
-8. Backend extracts frames from video
-
-9. Face embeddings generated from extracted frames
-
-10. Compare with stored face_embeddings
-
-11. Return best matched user
-
-12. Read requested systemCode
-
-13. Check user_system_permissions
-
-14. Check role_permissions
-
-15. Generate JWT token
-
-16. Insert access_logs
-
-17. Return login response
-
-18. Redirect to dashboard
+```
+ 1.  User opens login screen
+ 2.  Frontend starts camera
+ 3.  Blink detection runs
+ 4.  Head turn detection runs
+ 5.  Frontend records 5-second face video
+ 6.  Video converted into Blob
+ 7.  Blob uploaded to backend
+ 8.  Backend extracts frames from video
+ 9.  Face embeddings generated from frames
+10.  Compare with stored face_embeddings
+11.  Return best matched user
+12.  Read requested systemCode
+13.  Check user_system_permissions  ← overrides role permissions
+14.  Check role_permissions
+15.  Generate JWT token
+16.  Insert into access_logs
+17.  Return login response
+18.  Redirect to dashboard
 ```
 
 ---
 
-# 6. 詳細クエリフロー
-# Detailed Query Flow
+## 🔍 Detailed Query Flow
 
-## 詳細フロー図
-## Detailed Flow Diagram
+<div align="center">
 
-![Detailed Query Flow](./DetailedFlow.png)
+<!-- Adjust width here → DETAIL_IMG_WIDTH = 700px -->
+<img src="./DetailedFlow.png" width="700px" alt="Detailed Query Flow Diagram"/>
 
----
+*Figure 3 — Detailed query flow*
 
-## Step 1 — Face Matching
+</div>
+
+### Step 1 — Face Matching
 
 ```sql
 SELECT
@@ -342,12 +292,11 @@ FROM face_embeddings
 WHERE is_active = true;
 ```
 
-動画から抽出した顔特徴量を比較します。  
-Compare face embeddings extracted from video.
+> Compare embeddings extracted from the uploaded video against all active stored vectors.
 
 ---
 
-## Step 2 — Find System
+### Step 2 — Find System
 
 ```sql
 SELECT id
@@ -355,26 +304,24 @@ FROM systems
 WHERE code = 'WMS';
 ```
 
-systemCode から対象システム取得。  
-Find target system using systemCode.
+> Resolve `systemCode` from the request to an internal system ID.
 
 ---
 
-## Step 3 — Check User Override Permission
+### Step 3 — Check User Override Permission
 
 ```sql
 SELECT can_access
 FROM user_system_permissions
 WHERE user_id = 'u_001'
-AND system_id = 'sys_001';
+  AND system_id = 'sys_001';
 ```
 
-ユーザー個別権限確認。  
-Check explicit user override permission.
+> User-level permission takes **priority** over role-based permission.
 
 ---
 
-## Step 4 — Get Roles
+### Step 4 — Get User Roles
 
 ```sql
 SELECT role_id
@@ -382,39 +329,35 @@ FROM user_roles
 WHERE user_id = 'u_001';
 ```
 
-ユーザーロール取得。  
-Retrieve assigned roles.
-
 ---
 
-## Step 5 — Check Role Permissions
+### Step 5 — Check Role Permissions
 
 ```sql
 SELECT can_access
 FROM role_permissions
 WHERE role_id IN (...)
-AND system_id = 'sys_001';
+  AND system_id = 'sys_001';
 ```
 
-ロール権限確認。  
-Check role-based permissions.
+---
+
+### Step 6 — Generate JWT
+
+JWT payload includes:
+
+```json
+{
+  "userId": "u_001",
+  "roles": ["admin", "operator"],
+  "accessibleSystems": ["WMS", "TMS"],
+  "loginTimestamp": "2026-05-26T10:00:00Z"
+}
+```
 
 ---
 
-## Step 6 — Generate JWT
-
-JWT生成。
-
-JWT includes:
-
-- userId
-- roles
-- accessible systems
-- login timestamp
-
----
-
-## Step 7 — Save Access Log
+### Step 7 — Save Access Log
 
 ```sql
 INSERT INTO access_logs (
@@ -428,47 +371,38 @@ INSERT INTO access_logs (
 VALUES (...);
 ```
 
-ログ保存。  
-Save access history.
+---
+
+### Step 8 — Return Response
+
+Login success response returned. User redirected to `/dashboard`.
 
 ---
 
-## Step 8 — Return Response
+## ⚠️ Important Notes
 
-ログイン成功レスポンス返却。
-
-Return login success response.
-
----
-
-# 7. Important Notes
-# 重要ポイント
-
-- 顔データは静止画ではなく **5秒動画 Blob** で送信されます  
-  Face data is uploaded as a 5-second Blob video
-
-- Blink Detection を実装しています  
-  Blink detection is implemented
-
-- Head Turn Detection を実装しています  
-  Head turn detection is implemented
-
-- サーバー側で動画からフレーム抽出後に顔照合を行います  
-  Backend extracts frames before face matching
-
-- user_system_permissions は role_permissions より優先されます  
-  user permissions override role permissions
-
-- JWT に roles / systems を含みます  
-  JWT includes roles and accessible systems
-
-- access_logs にすべてのログイン履歴を保存します  
-  All login attempts are saved to access_logs
+> [!IMPORTANT]
+> - Face data is uploaded as a **5-second Blob video**, not a static image
+> - **Blink detection** is required to pass liveness check
+> - **Head turn detection** is required to pass liveness check
+> - Frame extraction happens server-side before any face matching
+> - `user_system_permissions` **overrides** `role_permissions`
+> - JWT contains `roles` and `accessibleSystems`
+> - **All login attempts** (success and failure) are saved to `access_logs`
 
 ---
 
-# 8. Future Improvements
-# 今後の改善案
+## 🔮 Future Improvements
 
-- Face recognition confidence tuning
-```
+- [ ] Face recognition confidence threshold tuning
+- [ ] Multi-factor fallback (PIN / OTP)
+- [ ] Real-time liveness score feedback to frontend
+- [ ] Admin dashboard for access log review
+
+---
+
+<div align="center">
+
+*Face Authentication API — Internal Documentation*
+
+</div>
