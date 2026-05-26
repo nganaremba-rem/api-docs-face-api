@@ -1,3 +1,7 @@
+---
+   layout: default
+   title: Face API Docs
+---
 
 <div align="center">
 
