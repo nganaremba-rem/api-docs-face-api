@@ -72,40 +72,65 @@ For every API:
 
 This explains how the full system behaves.
 
-## Include:
-- Authentication
-- Performance
-- Capacity
-- Security
-- Storage
-- Deployment
-- Monitoring
+This is usually what clients/management ask.
 
-### Authentication
-- Password
-- Face recognition
-- OTP
+# Should include:
+## Authentication
+- Login type
+  - Password
+  - Face recognition
+  - OTP
 - Token expiry
 - Session timeout
 
-### Performance Example
-- Authentication speed: 1.8 sec average
-- Face matching: 600 ms
-- Liveness detection: 1.2 sec
 
-### Capacity Example
-- 50,000 users
-- 200 concurrent requests
-- 120 req/sec
+# Performance
 
-### Security
-- JWT
-- HTTPS TLS
-- bcrypt
-- AES encryption
-- RBAC
-- Rate limiting
+Need measurable numbers.
+
+Example:
+
+- Authentication speed:
+  - Average: 1.8 sec
+  - Maximum: 3 sec
+- Face matching time:
+  - 600 ms
+- Liveness detection:
+  - 1.2 sec
+
+
+# Security
+
+Example:
+
+- JWT authentication
+- HTTPS TLS encryption
+- Password hashing with bcrypt
+- AES encryption for sensitive data
+- Role-based access control
+- API rate limiting
+- IP restrictions
+- Secure cookies
 - CSRF protection
+
+# Storage
+
+Example:
+
+- PostgreSQL for user data
+- S3 for video blob storage
+- Redis for caching
+
+# Capacity
+
+Example:
+
+- Max registered users:
+  - 50,000
+- Concurrent authentication requests:
+  - 200
+- Average requests/sec:
+  - 120 req/sec
 
 ---
 
